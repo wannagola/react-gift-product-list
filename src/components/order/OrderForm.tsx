@@ -1,134 +1,123 @@
-import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
-import RecipientsList from './RecipientsList';
-import type { giftItems } from '@/mock/giftItems';
-
-
-export type Recipient = {
-  name: string;
-  phone: string;     
-  quantity: number;  
-};
+import { useForm } from 'react-hook-form';
+import { GiftItem } from '@/constants/GiftItem';
+import { Recipient } from '@/types/order';
 
 export type OrderFormData = {
-  message: string;
   sender: string;
+  message: string;
   recipients: Recipient[];
 };
 
-
 type Props = {
-  onSubmit: (data: OrderFormData) => void;
-  product: (typeof giftItems)[number];
+  product: GiftItem;
   defaultMessage: string;
+  recipients: Recipient[];
+  onEditRecipients: () => void;
+  onSubmit: (data: OrderFormData) => void;
 };
 
-const OrderForm = ({ onSubmit, product, defaultMessage }: Props) => {
-  const [form, setForm] = useState<OrderFormData>({
-    message: defaultMessage,
-    sender: '',
-    recipients: [],
+const OrderForm = ({
+  product,
+  defaultMessage,
+  recipients,
+  onEditRecipients,
+  onSubmit,
+}: Props) => {
+  const { register, handleSubmit } = useForm<OrderFormData>({
+    defaultValues: {
+      sender: '',
+      message: defaultMessage,
+      recipients,
+    },
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof OrderFormData, string>>>({});
-  const [recipientsEditable, setRecipientsEditable] = useState(false);
 
-  useEffect(() => {
-    setForm((f) => ({ ...f, message: defaultMessage }));
-    setRecipientsEditable(false);
-  }, [defaultMessage]);
-
-  const validate = (): boolean => {
-    const newErrors: typeof errors = {};
-    if (!form.message.trim()) newErrors.message = '메시지는 반드시 입력 되어야 해요.';
-    if (!form.sender.trim())  newErrors.sender  = '보내는 사람 이름이 반드시 입력 되어야 해요.';
-    if (form.recipients.length < 1)
-      newErrors.recipients = '최소 1명 이상의 받는 사람을 등록해야 해요.';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validate()) onSubmit(form);
-  };
+  const total = recipients.reduce(
+    (sum, r) => sum + r.quantity * product.price.sellingPrice,
+    0
+  );
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <FieldGroup>
+    <form onSubmit={handleSubmit((data) => onSubmit({ ...data, recipients }))}>
+      <Field>
         <Label>메시지</Label>
-        <Textarea
-          value={form.message}
-          onChange={(e) => setForm({ ...form, message: e.target.value })}
+        <TextArea
+          {...register('message')}
+          rows={3}
+          placeholder="축하해요."
         />
-        {errors.message && <ErrorText>{errors.message}</ErrorText>}
-      </FieldGroup>
+      </Field>
 
-      <FieldGroup>
+      <Field>
         <Label>보내는 사람</Label>
         <Input
-          placeholder="이름을 입력하세요."
-          value={form.sender}
-          onChange={(e) => setForm({ ...form, sender: e.target.value })}
+          {...register('sender', { required: true })}
+          placeholder="이름을 입력해주세요"
         />
-        {errors.sender && <ErrorText>{errors.sender}</ErrorText>}
-      </FieldGroup>
+        <Small>* 실제 선물 발송 시 발신자이름으로 반영되는 정보입니다.</Small>
+      </Field>
 
-      <FieldGroup>
-        <SectionHeader>
-          <Label>받는 사람</Label>
-          {form.recipients.length > 0 && (
-            <EditButton
-              type="button"
-              onClick={() => setRecipientsEditable((v) => !v)}
-            >
-              {recipientsEditable ? '완료' : '수정'}
-            </EditButton>
-          )}
-        </SectionHeader>
+      <RecipientSection>
+        <HeaderRow>
+          <SubTitle>받는 사람</SubTitle>
+          <EditBtn type="button" onClick={onEditRecipients}>
+            수정
+          </EditBtn>
+        </HeaderRow>
 
-        <RecipientsList
-          recipients={form.recipients}
-          setRecipients={(r) => setForm({ ...form, recipients: r })}
-          editable={recipientsEditable}
-        />
-        {errors.recipients && <ErrorText>{errors.recipients}</ErrorText>}
-      </FieldGroup>
+        {recipients.length === 0 ? (
+          <PlaceholderBox>
+            받는 사람이 없습니다.
+            <br />
+            받는 사람을 추가해주세요.
+          </PlaceholderBox>
+        ) : (
+          <Table>
+            <thead>
+              <tr>
+                <th>이름</th>
+                <th>전화번호</th>
+                <th>수량</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recipients.map((r, i) => (
+                <tr key={i}>
+                  <td>{r.name}</td>
+                  <td>{r.phone}</td>
+                  <td>{r.quantity}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </RecipientSection>
 
-      <FieldGroup>
-        <Label>상품 정보</Label>
-        <ProductSection>
-          <ProductThumb src={product.imageURL} alt={product.name} />
-          <ProductInfo>
-            <ProductName>{product.name}</ProductName>
-            <Brand>{product.brandInfo.name}</Brand>
-            <Price>{product.price.sellingPrice.toLocaleString()}원</Price>
-          </ProductInfo>
-        </ProductSection>
-      </FieldGroup>
+      <ProductCard>
+        <Thumb src={product.imageURL} alt="product" />
+        <Info>
+          <Brand>{product.brandInfo.name}</Brand>
+          <ProdName>{product.name}</ProdName>
+          <Price>
+            상품가 {product.price.sellingPrice.toLocaleString()}원
+          </Price>
+        </Info>
+      </ProductCard>
 
-      <SubmitButton type="submit">주문하기</SubmitButton>
-    </Form>
+      <SubmitButton type="submit">
+        {total.toLocaleString()}원 주문하기
+      </SubmitButton>
+    </form>
   );
 };
 
 export default OrderForm;
 
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.spacing4};
-`;
-
-const FieldGroup = styled.div`
+const Field = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.spacing2};
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing.spacing5};
 `;
 
 const Label = styled.label`
@@ -136,82 +125,157 @@ const Label = styled.label`
   color: ${({ theme }) => theme.textColors.default};
 `;
 
-const EditButton = styled.button`
-  padding: ${({ theme }) => theme.spacing.spacing1}
-    ${({ theme }) => theme.spacing.spacing2};
-  font: ${({ theme }) => theme.typography.body2Bold};
-  background-color: ${({ theme }) => theme.backgroundColors.fill};
-  border: 1px solid ${({ theme }) => theme.borderColors.default};
+const Input = styled.input`
+  padding: ${({ theme }) => theme.spacing.spacing3};
   border-radius: ${({ theme }) => theme.spacing.spacing2};
-  cursor: pointer;
-  &:hover {
-    background-color: ${({ theme }) => theme.sementicColors.kakaoYellowHover};
+  border: 1px solid ${({ theme }) => theme.borderColors.default};
+  font: ${({ theme }) => theme.typography.body2Regular};
+  color: ${({ theme }) => theme.textColors.default};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.textColors.placeholder};
   }
 `;
 
-const Input = styled.input`
-  padding: ${({ theme }) => theme.spacing.spacing2};
-  border: 1px solid ${({ theme }) => theme.borderColors.default};
+const TextArea = styled.textarea`
+  padding: ${({ theme }) => theme.spacing.spacing3};
   border-radius: ${({ theme }) => theme.spacing.spacing2};
+  border: 1px solid ${({ theme }) => theme.borderColors.default};
+  resize: none;
   font: ${({ theme }) => theme.typography.body2Regular};
+  color: ${({ theme }) => theme.textColors.default};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.textColors.placeholder};
+  }
 `;
 
-const Textarea = styled.textarea`
-  padding: ${({ theme }) => theme.spacing.spacing2};
-  height: 80px;
-  resize: vertical;
-  border: 1px solid ${({ theme }) => theme.borderColors.default};
-  border-radius: ${({ theme }) => theme.spacing.spacing2};
-  font: ${({ theme }) => theme.typography.body2Regular};
-`;
-
-const ErrorText = styled.span`
+const Small = styled.span`
   font: ${({ theme }) => theme.typography.label2Regular};
-  color: ${({ theme }) => theme.stateColors.critical};
-`;
-
-const ProductSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing.spacing3};
-  padding: ${({ theme }) => theme.spacing.spacing2};
-  border: 1px solid ${({ theme }) => theme.borderColors.default};
-  border-radius: ${({ theme }) => theme.spacing.spacing2};
-`;
-
-const ProductThumb = styled.img`
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: ${({ theme }) => theme.spacing.spacing2};
-`;
-
-const ProductInfo = styled.div``;
-
-const ProductName = styled.div`
-  font: ${({ theme }) => theme.typography.body1Bold};
-`;
-
-const Brand = styled.div`
-  font: ${({ theme }) => theme.typography.body2Regular};
   color: ${({ theme }) => theme.textColors.sub};
 `;
 
-const Price = styled.div`
-  font: ${({ theme }) => theme.typography.body1Bold};
+const RecipientSection = styled.section`
+  margin: ${({ theme }) => theme.spacing.spacing8} 0
+    ${({ theme }) => theme.spacing.spacing4};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacing.spacing3};
+`;
+
+const SubTitle = styled.h3`
+  font: ${({ theme }) => theme.typography.subtitle1Bold};
+  color: ${({ theme }) => theme.textColors.default};
+`;
+
+const EditBtn = styled.button`
+  background: ${({ theme }) => theme.sementicColors.kakaoYellow};
+  border: none;
+  border-radius: ${({ theme }) => theme.spacing.spacing2};
+  padding: ${({ theme }) => theme.spacing.spacing1}
+    ${({ theme }) => theme.spacing.spacing3};
+  font: ${({ theme }) => theme.typography.label2Bold};
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.sementicColors.kakaoYellowHover};
+  }
+  &:active {
+    background: ${({ theme }) => theme.sementicColors.kakaoYellowActive};
+  }
+`;
+
+const PlaceholderBox = styled.div`
+  padding: ${({ theme }) => theme.spacing.spacing6} 0;
+  text-align: center;
+  color: ${({ theme }) => theme.textColors.sub};
+  font: ${({ theme }) => theme.typography.body2Regular};
+  border: 1px solid ${({ theme }) => theme.borderColors.disabled};
+  border-radius: ${({ theme }) => theme.spacing.spacing2};
+  background: ${({ theme }) => theme.backgroundColors.fill};
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font: ${({ theme }) => theme.typography.body2Regular};
+  color: ${({ theme }) => theme.textColors.default};
+
+  th,
+  td {
+    padding: ${({ theme }) => theme.spacing.spacing3}
+      ${({ theme }) => theme.spacing.spacing2};
+    border-bottom: 1px solid ${({ theme }) => theme.borderColors.disabled};
+    text-align: left;
+  }
+
+  th {
+    background: ${({ theme }) => theme.backgroundColors.fill};
+    font: ${({ theme }) => theme.typography.subtitle2Bold};
+  }
+`;
+
+const ProductCard = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.spacing3};
+  margin: ${({ theme }) => theme.spacing.spacing8} 0
+    ${({ theme }) => theme.spacing.spacing6};
+  padding: ${({ theme }) => theme.spacing.spacing4};
+  border: 1px solid ${({ theme }) => theme.borderColors.disabled};
+  border-radius: ${({ theme }) => theme.spacing.spacing3};
+  background: ${({ theme }) => theme.backgroundColors.fill};
+`;
+
+const Thumb = styled.img`
+  width: 64px;
+  height: 64px;
+  border-radius: ${({ theme }) => theme.spacing.spacing2};
+  object-fit: cover;
+`;
+
+const Info = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.spacing1};
+  justify-content: center;
+`;
+
+const Brand = styled.span`
+  font: ${({ theme }) => theme.typography.label2Regular};
+  color: ${({ theme }) => theme.textColors.sub};
+`;
+
+const ProdName = styled.span`
+  font: ${({ theme }) => theme.typography.body2Bold};
+  color: ${({ theme }) => theme.textColors.default};
+`;
+
+const Price = styled.span`
+  font: ${({ theme }) => theme.typography.body2Bold};
   color: ${({ theme }) => theme.textColors.default};
 `;
 
 const SubmitButton = styled.button`
-  margin-top: ${({ theme }) => theme.spacing.spacing4};
-  background-color: ${({ theme }) => theme.sementicColors.kakaoYellow};
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 720px;
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing.spacing5} 0;
+  background: ${({ theme }) => theme.sementicColors.kakaoYellow};
   color: ${({ theme }) => theme.textColors.default};
-  font: ${({ theme }) => theme.typography.body1Bold};
-  padding: ${({ theme }) => theme.spacing.spacing3};
+  font: ${({ theme }) => theme.typography.title2Bold};
   border: none;
-  border-radius: ${({ theme }) => theme.spacing.spacing2};
   cursor: pointer;
+
   &:hover {
-    background-color: ${({ theme }) => theme.sementicColors.kakaoYellowHover};
+    background: ${({ theme }) => theme.sementicColors.kakaoYellowHover};
+  }
+  &:active {
+    background: ${({ theme }) => theme.sementicColors.kakaoYellowActive};
   }
 `;

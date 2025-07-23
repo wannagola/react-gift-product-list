@@ -1,30 +1,30 @@
-import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 
 import { messageCards } from '@/mock/cards';
 import { giftItems } from '@/mock/giftItems';
 import OrderForm, { OrderFormData } from '@/components/order/OrderForm';
+import RecipientsModal from '@/components/order/RecipientsModal';
+import { Recipient } from '@/types/order';
 
 const OrderPage = () => {
-  const { id } = useParams<{ id: string }>();
-  const product = giftItems.find((item) => item.id === Number(id));
+  const { id } = useParams();
   const navigate = useNavigate();
+  const product = giftItems.find((item) => item.id === Number(id));
 
-  const [selectedCardId, setSelectedCardId] = useState<number>(
-    messageCards[0].id
-  );
-  const selectedCard = messageCards.find(
-    (c) => c.id === selectedCardId
-  )!;
+  const [selectedCardIndex, setSelectedCardIndex] = useState(0);
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [showModal, setShowModal] = useState(false);
+
+  if (!product) return <div>상품을 찾을 수 없습니다.</div>;
 
   const handleOrderSubmit = (form: OrderFormData) => {
     alert(
-      `주문이 완료되었습니다.\n` +
-        `상품명: ${product!.name}\n` +
-        `발신자 이름: ${form.sender}\n` +
+      `주문 완료!\n` +
+        `상품: ${product.name}\n` +
+        `발신자: ${form.sender}\n` +
         `메시지: ${form.message}\n\n` +
-        `[받는 사람 목록]\n` +
         form.recipients
           .map(
             (r, i) => `${i + 1}. ${r.name} / ${r.phone} / 수량 ${r.quantity}개`
@@ -34,97 +34,100 @@ const OrderPage = () => {
     navigate('/');
   };
 
-  if (!product) return <div>상품을 찾을 수 없습니다.</div>;
-
   return (
     <Container>
       <Section>
-        <SectionTitle>메시지 카드 선택</SectionTitle>
-        <CardSelector>
-          {messageCards.map((card) => (
-            <MessageCardThumb
+        <Title>메시지 카드 선택</Title>
+        <CardThumbRow>
+          {messageCards.map((card, idx) => (
+            <CardThumb
               key={card.id}
               src={card.thumbUrl}
               alt={card.defaultTextMessage}
-              isSelected={card.id === selectedCardId}
-              onClick={() => setSelectedCardId(card.id)}
+              isSelected={selectedCardIndex === idx}
+              onClick={() => setSelectedCardIndex(idx)}
             />
           ))}
-        </CardSelector>
+        </CardThumbRow>
+
+        <SelectedCardBox>
+          <SelectedCardImg
+            src={messageCards[selectedCardIndex].imageUrl}
+            alt={messageCards[selectedCardIndex].defaultTextMessage}
+          />
+        </SelectedCardBox>
       </Section>
 
-      <Section>
-        <SelectedCardSection>
-          <SelectedImage
-            src={selectedCard.imageUrl}
-            alt={selectedCard.defaultTextMessage}
-          />
-        </SelectedCardSection>
-      </Section>
+      {/* 주문 폼 */}
+      <OrderForm
+        product={product}
+        defaultMessage={messageCards[selectedCardIndex].defaultTextMessage}
+        recipients={recipients}
+        onEditRecipients={() => setShowModal(true)}
+        onSubmit={handleOrderSubmit}
+      />
 
-      <Section>
-        <FormSection>
-          <OrderForm
-            onSubmit={handleOrderSubmit}
-            product={product}
-            defaultMessage={selectedCard.defaultTextMessage}
-          />
-        </FormSection>
-      </Section>
+      {/* 받는 사람 모달 */}
+      <RecipientsModal
+        isOpen={showModal}
+        initialRecipients={recipients}
+        onSave={(newRecipients: Recipient[]) => {
+          setRecipients(newRecipients);
+          setShowModal(false);
+        }}
+        onClose={() => setShowModal(false)}
+      />
     </Container>
   );
 };
 
 export default OrderPage;
 
-
 const Container = styled.div`
-  padding-bottom: 100px;
+  padding: ${({ theme }) => theme.spacing.spacing6}
+    ${({ theme }) => theme.spacing.spacing4}
+    120px; /* bottom space for fixed button */
+  max-width: 720px;
+  margin: 0 auto;
+  background: ${({ theme }) => theme.backgroundColors.default};
 `;
 
 const Section = styled.section`
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 16px;
+  margin-bottom: ${({ theme }) => theme.spacing.spacing6};
 `;
 
-const SectionTitle = styled.h2`
-  font-size: 13px;
-  font-weight: bold;
-  margin-bottom: 8px;
+const Title = styled.h2`
+  font: ${({ theme }) => theme.typography.label2Bold};
   color: ${({ theme }) => theme.textColors.default};
+  margin-bottom: ${({ theme }) => theme.spacing.spacing2};
 `;
 
-const CardSelector = styled.div`
+const CardThumbRow = styled.div`
   display: flex;
   overflow-x: auto;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing.spacing2};
+  padding-bottom: ${({ theme }) => theme.spacing.spacing2};
 `;
 
-const MessageCardThumb = styled.img<{ isSelected: boolean }>`
+const CardThumb = styled.img<{ isSelected: boolean }>`
   width: 60px;
   height: 60px;
-  border-radius: 8px;
-  border: 2px solid
-    ${({ isSelected, theme }) =>
-      isSelected ? theme.sementicColors.kakaoYellow : 'transparent'};
+  border-radius: ${({ theme }) => theme.spacing.spacing2};
+  border: ${({ isSelected, theme }) =>
+    isSelected
+      ? `2px solid ${theme.sementicColors.kakaoYellow}`
+      : '2px solid transparent'};
   cursor: pointer;
+  flex: 0 0 auto;
 `;
 
-const SelectedCardSection = styled.div`
+const SelectedCardBox = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
+  margin: ${({ theme }) => theme.spacing.spacing5} 0;
 `;
 
-const SelectedImage = styled.img`
+const SelectedCardImg = styled.img`
   width: 240px;
-  border-radius: 16px;
-`;
-
-
-const FormSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  border-radius: ${({ theme }) => theme.spacing.spacing4};
 `;
