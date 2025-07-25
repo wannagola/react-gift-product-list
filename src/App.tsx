@@ -1,16 +1,16 @@
 import styled from '@emotion/styled';
 import NavigationBar from '@/components/common/NavigationBar';
-import CategorySection from '@/components/home/CategorySection';
 import FriendSelectSection from '@/components/home/FriendSelectSection';
 import BannerSection from '@/components/home/BannerSection';
-import GiftRankingGrid from '@/components/GiftRanking/GiftRankingGrid';
+import ThemeSection from '@/components/home/ThemeSection';
+import RankingSection from '@/components/home/RankingSection';
 import LoginPage from '@/pages/loginpage';
 import MyPage from '@/pages/MyPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import OrderPage from '@/pages/OrderPage';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
-import ProtectedRoute from '@/components/common/ProtectedRoute'; 
+import ProtectedRoute from '@/components/common/ProtectedRoute';
 
 function App() {
   return (
@@ -25,9 +25,9 @@ function App() {
                 element={
                   <>
                     <FriendSelectSection />
-                    <CategorySection />
+                    <ThemeSection />
                     <BannerSection />
-                    <GiftRankingGrid />
+                    <RankingSection />
                   </>
                 }
               />
