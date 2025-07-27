@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
 import styled from '@emotion/styled';
 import { tabs } from '@/constants/RankingTabs';
 import type { TabValue } from '@/constants/RankingTabs';
@@ -8,23 +8,14 @@ type Props = {
   onChange: (value: TabValue) => void;
 };
 
-const GiftRankingTab = ({ onChange }: Props) => {
-  const [localSelected, setLocalSelected] = useState<TabValue>(() => {
-    return (localStorage.getItem('selectedSubTab') as TabValue) || tabs[0].value;
-  });
-
-  useEffect(() => {
-    onChange(localSelected);
-    localStorage.setItem('selectedSubTab', localSelected);
-  }, [localSelected, onChange]);
-
+const GiftRankingTab: React.FC<Props> = ({ selected, onChange }) => {
   return (
     <TabContainer>
       {tabs.map((tab) => (
         <TabButton
           key={tab.value}
-          selected={localSelected === tab.value}
-          onClick={() => setLocalSelected(tab.value)}
+          selected={selected === tab.value}
+          onClick={() => onChange(tab.value)}
         >
           {tab.label}
         </TabButton>
@@ -47,10 +38,11 @@ const TabButton = styled.button<{ selected: boolean }>`
   padding: 10px 0;
   font-size: 14px;
   font-weight: ${({ selected }) => (selected ? '700' : '500')};
-  border: none;
-  background-color: ${({ theme }) => theme.colors.blue100};
+  background-color: ${({ theme, selected }) =>
+    selected ? theme.colors.blue200 : theme.colors.blue100};
   color: ${({ theme, selected }) =>
     selected ? theme.colors.blue900 : theme.textColors.default};
+  border: none;
   border-radius: 8px;
   cursor: pointer;
 `;

@@ -4,7 +4,8 @@ const BannerSection = () => {
   return (
     <BannerWrapper>
       <BannerText>
-        부산대학교 Front-end 성민기<br />
+        부산대학교 Front-end 성민기
+        <br />
         <strong>카카오테크캠퍼스 화이팅! 🎉</strong>
       </BannerText>
     </BannerWrapper>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useLocalStorageState } from '@/hooks/useLocalStorageState';
 
@@ -7,14 +7,16 @@ type User = {
   email: string;
 };
 
-type AuthContextType = {
+export type AuthContextType = {
   user: User | null;
   login: (user: User) => void;
   logout: () => void;
   isLoading: boolean;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useLocalStorageState<User | null>('authUser', null);
@@ -28,12 +30,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth는 AuthProvider 내에서만 사용해야 합니다.');
-  }
-  return context;
 };

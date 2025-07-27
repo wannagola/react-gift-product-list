@@ -16,7 +16,6 @@ const NotFoundPage = () => {
 
 export default NotFoundPage;
 
-// 스타일 정의
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -45,7 +44,8 @@ const Message = styled.p`
 `;
 
 const HomeButton = styled.button`
-  padding: ${({ theme }) => `${theme.spacing.spacing3} ${theme.spacing.spacing6}`};
+  padding: ${({ theme }) =>
+    `${theme.spacing.spacing3} ${theme.spacing.spacing6}`};
   background-color: ${({ theme }) => theme.sementicColors.kakaoYellow};
   color: #000000;
   font: ${({ theme }) => theme.typography.body2Bold};

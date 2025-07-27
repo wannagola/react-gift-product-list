@@ -1,7 +1,7 @@
 export const tabs = [
-  { label: '받고 싶어한', value: 'wish' },
-  { label: '많이 선물한', value: 'sent' },
-  { label: '위시로 받은', value: 'wishlist' },
+  { label: '많이 찜한', value: 'MANY_WISH' },
+  { label: '많이 선물한', value: 'MANY_RECEIVE' },
+  { label: '많이 찜하고 받은', value: 'MANY_WISH_RECEIVE' },
 ] as const;
 
 export type TabValue = (typeof tabs)[number]['value'];

@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const ProtectedRoute = ({ children }: { children: ReactElement }) => {
   const { user, isLoading } = useAuth();

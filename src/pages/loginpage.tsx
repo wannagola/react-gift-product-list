@@ -26,7 +26,8 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: ${({ theme }) => theme.spacing.spacing12} ${({ theme }) => theme.spacing.spacing5} 0;
+  padding: ${({ theme }) => theme.spacing.spacing12}
+    ${({ theme }) => theme.spacing.spacing5} 0;
   background-color: ${({ theme }) => theme.backgroundColors.default};
   max-width: 720px;
   margin: 0 auto;

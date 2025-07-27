@@ -2,7 +2,7 @@
 import styled from '@emotion/styled';
 import { useLoginForm } from '@/hooks/useLoginForm';
 import { theme } from '@/constants/theme';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 type Props = {
   onLoginSuccess: () => void;
@@ -21,14 +21,14 @@ const LoginFormSection = ({ onLoginSuccess }: Props) => {
     isFormValid,
   } = useLoginForm();
 
-  const { login } = useAuth(); 
+  const { login } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isFormValid) {
       login({ id: '1', email: id });
-      onLoginSuccess();              
+      onLoginSuccess();
     }
   };
 

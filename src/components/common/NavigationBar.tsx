@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { useTheme } from '@emotion/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiChevronLeft, FiUser } from 'react-icons/fi';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const NavigationBar = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const NavigationBar = () => {
       </Left>
 
       <Center>
-        <Title to="/">선물하기</Title> 
+        <Title to="/">선물하기</Title>
       </Center>
 
       <Right>
