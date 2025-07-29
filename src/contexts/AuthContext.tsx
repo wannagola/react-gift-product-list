@@ -1,10 +1,9 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, ReactNode } from 'react';
 import {
   getUserFromStorage,
   setUserToStorage,
   clearUserStorage,
 } from '@/utils/localStorage';
-import type { ReactNode } from 'react';
 
 export type User = {
   email: string;
@@ -14,7 +13,7 @@ export type User = {
 
 type AuthContextType = {
   user: User | null;
-  login: (params: { email: string; password: string }) => Promise<void>;
+  login: (user: User) => void;
   logout: () => void;
   isLoading: boolean;
 };
@@ -33,36 +32,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async ({
-    email,
-    password,
-  }: {
-    email: string;
-    password: string;
-  }) => {
-    const response = await fetch('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    // 응답 JSON 파싱을 구현한 부분입니다.
-    const json = await response.json().catch(() => null);
-
-    if (!response.ok || !json?.data) {
-      const msg = json?.data?.message ?? '로그인에 실패했습니다.';
-      throw new Error(msg);
-    }
-
-    const { email: userEmail, name, token } = json.data;
-    const userInfo: User = {
-      email: userEmail,
-      name,
-      authToken: token,
-    };
-
-    setUser(userInfo);
-    setUserToStorage(userInfo);
+  const login = (u: User) => {
+    setUser(u);
+    setUserToStorage(u);
   };
 
   const logout = () => {
