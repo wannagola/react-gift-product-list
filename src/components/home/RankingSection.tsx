@@ -15,17 +15,14 @@ const PAGE_SIZE = 10;
 const RankingSection: React.FC = () => {
   const [filter, setFilter] = React.useState<FilterValue>('ALL');
   const [tab, setTab] = React.useState<TabValue>(() => {
-    const saved = localStorage.getItem('lastTab');
+    const saved = localStorage.getItem('lastTab') as TabValue | null;
     const validTabs: TabValue[] = [
       'MANY_WISH',
       'MANY_RECEIVE',
       'MANY_WISH_RECEIVE',
     ];
-    return (
-      validTabs.includes(saved as TabValue) ? saved : 'MANY_WISH'
-    ) as TabValue;
+    return saved && validTabs.includes(saved) ? saved : 'MANY_WISH';
   });
-
   const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
 
   React.useEffect(() => {
@@ -36,8 +33,6 @@ const RankingSection: React.FC = () => {
   const { products, loading, error } = useRanking(filter, tab);
 
   if (loading) return <Spinner />;
-  if (error) return null;
-  if (products.length === 0) return <ErrorMsg>상품이 없습니다.</ErrorMsg>;
 
   const visibleItems = products.slice(0, visibleCount);
   const hasMore = visibleCount < products.length;
@@ -48,36 +43,46 @@ const RankingSection: React.FC = () => {
       <GiftRankingFilter selected={filter} onChange={setFilter} />
       <GiftRankingTab selected={tab} onChange={setTab} />
 
-      <Grid>
-        {visibleItems.map((p, idx) => (
-          <CardWrapper key={p.id}>
-            <RankBadge>{idx + 1}</RankBadge>
-            <GiftItemCard
-              item={{
-                id: p.id,
-                name: p.name,
-                imageURL: p.imageURL,
-                price: {
-                  basicPrice: p.price.basicPrice,
-                  sellingPrice: p.price.sellingPrice,
-                  discountRate: p.price.discountRate,
-                },
-                brandInfo: {
-                  id: p.brandInfo.id,
-                  name: p.brandInfo.name,
-                  imageURL: p.brandInfo.imageURL,
-                },
-              }}
-            />
-          </CardWrapper>
-        ))}
-      </Grid>
+      <ContentArea>
+        {error ? (
+          <ErrorMsg>불러오는 중 오류가 발생했습니다.</ErrorMsg>
+        ) : products.length === 0 ? (
+          <ErrorMsg>상품이 없습니다.</ErrorMsg>
+        ) : (
+          <>
+            <Grid>
+              {visibleItems.map((p, idx) => (
+                <CardWrapper key={p.id}>
+                  <RankBadge>{idx + 1}</RankBadge>
+                  <GiftItemCard
+                    item={{
+                      id: p.id,
+                      name: p.name,
+                      imageURL: p.imageURL,
+                      price: {
+                        basicPrice: p.price.basicPrice,
+                        sellingPrice: p.price.sellingPrice,
+                        discountRate: p.price.discountRate,
+                      },
+                      brandInfo: {
+                        id: p.brandInfo.id,
+                        name: p.brandInfo.name,
+                        imageURL: p.brandInfo.imageURL,
+                      },
+                    }}
+                  />
+                </CardWrapper>
+              ))}
+            </Grid>
 
-      {hasMore && (
-        <MoreButton onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
-          더보기
-        </MoreButton>
-      )}
+            {hasMore && (
+              <MoreButton onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+                더보기
+              </MoreButton>
+            )}
+          </>
+        )}
+      </ContentArea>
     </Section>
   );
 };
@@ -93,6 +98,14 @@ const SectionTitle = styled.h2`
   font-weight: 600;
   margin-bottom: 16px;
   color: ${({ theme }) => theme.textColors.default};
+`;
+
+const ContentArea = styled.div`
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 `;
 
 const Grid = styled.ul`
