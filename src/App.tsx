@@ -1,4 +1,7 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import styled from '@emotion/styled';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import NavigationBar from '@/components/common/NavigationBar';
 import FriendSelectSection from '@/components/home/FriendSelectSection';
 import BannerSection from '@/components/home/BannerSection';
@@ -8,7 +11,6 @@ import LoginPage from '@/pages/loginpage';
 import MyPage from '@/pages/MyPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import OrderPage from '@/pages/OrderPage';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 
@@ -53,6 +55,15 @@ function App() {
           </AppInner>
         </AppContainer>
       </Router>
+
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+      />
     </AuthProvider>
   );
 }

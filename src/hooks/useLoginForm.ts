@@ -1,5 +1,7 @@
+// src/hooks/useLoginForm.ts
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { apiClient } from '@/api/apiClient';
 
 type Props = {
   onLoginSuccess: () => void;
@@ -47,10 +49,24 @@ export const useLoginForm = ({ onLoginSuccess }: Props) => {
     if (!validateId() || !validatePw()) return;
 
     try {
-      await login({ email: id, password: pw });
+      // axios 인스턴스로 /login 호출
+      const response = await apiClient.post('/login', {
+        email: id,
+        password: pw,
+      });
+
+      // { data: { email, name, token } } 구조 언랩
+      const { email, name, token } = response.data.data;
+      // AuthContext 에 저장
+      login({ email, name, authToken: token });
       onLoginSuccess();
     } catch (e: any) {
-      setPwError(e.message);
+      // 서버 메시지 우선, 없으면 예외 메시지
+      const msg =
+        e.response?.data?.data?.message ??
+        e.response?.data?.message ??
+        e.message;
+      setPwError(msg);
     }
   };
 
