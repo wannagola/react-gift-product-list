@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { GiftItem } from '@/constants/GiftItem';
 import { Recipient } from '@/types/order';
@@ -15,6 +16,7 @@ type Props = {
   recipients: Recipient[];
   onEditRecipients: () => void;
   onSubmit: (data: OrderFormData) => void;
+  defaultSender: string;
 };
 
 const OrderForm = ({
@@ -23,14 +25,19 @@ const OrderForm = ({
   recipients,
   onEditRecipients,
   onSubmit,
+  defaultSender,
 }: Props) => {
-  const { register, handleSubmit } = useForm<OrderFormData>({
+  const { register, handleSubmit, setValue } = useForm<OrderFormData>({
     defaultValues: {
-      sender: '',
+      sender: defaultSender,
       message: defaultMessage,
       recipients,
     },
   });
+
+  useEffect(() => {
+    setValue('message', defaultMessage);
+  }, [defaultMessage, setValue]);
 
   const total = recipients.reduce(
     (sum, r) => sum + r.quantity * product.price.sellingPrice,

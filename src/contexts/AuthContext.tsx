@@ -1,4 +1,10 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useContext,
+} from 'react';
 import {
   getUserFromStorage,
   setUserToStorage,
@@ -47,4 +53,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth는 AuthProvider 안에서만 사용할 수 있습니다.');
+  }
+  return context;
 };
