@@ -2,6 +2,7 @@ import { apiClient } from '@/api/apiClient';
 import { toast } from 'react-toastify';
 import { Product } from './ranking';
 import { NavigateFunction } from 'react-router-dom';
+import { AxiosError } from 'axios';
 
 export interface ProductBasic {
   id: number;
@@ -23,6 +24,13 @@ interface ApiResponse<T> {
   data: T;
 }
 
+interface ErrorResponse {
+  message?: string;
+  data?: {
+    message?: string;
+  };
+}
+
 export const fetchProductBasic = async (
   productId: number
 ): Promise<ProductBasic> => {
@@ -31,17 +39,21 @@ export const fetchProductBasic = async (
   );
   return res.data.data;
 };
+
 export const fetchProductSummary = async (
   productId: string,
   navigate: NavigateFunction
 ): Promise<Product | null> => {
   try {
-    const res = await apiClient.get(`/products/${productId}/summary`);
-    return res.data?.data ?? null;
-  } catch (err: any) {
+    const res = await apiClient.get<ApiResponse<Product>>(
+      `/products/${productId}/summary`
+    );
+    return res.data.data ?? null;
+  } catch (err: unknown) {
+    const error = err as AxiosError<ErrorResponse>;
     const msg =
-      err.response?.data?.data?.message ||
-      err.response?.data?.message ||
+      error.response?.data?.data?.message ||
+      error.response?.data?.message ||
       '상품 정보를 불러오지 못했습니다.';
     toast.error(msg);
     navigate('/');

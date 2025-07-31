@@ -1,10 +1,20 @@
-// src/hooks/useLoginForm.ts
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/api/apiClient';
+import { AxiosError } from 'axios';
 
 type Props = {
   onLoginSuccess: () => void;
+};
+
+type LoginResponse = {
+  message?: string;
+  data?: {
+    message?: string;
+    email: string;
+    name: string;
+    token: string;
+  };
 };
 
 export const useLoginForm = ({ onLoginSuccess }: Props) => {
@@ -49,23 +59,24 @@ export const useLoginForm = ({ onLoginSuccess }: Props) => {
     if (!validateId() || !validatePw()) return;
 
     try {
-      // axios 인스턴스로 /login 호출
-      const response = await apiClient.post('/login', {
+      const response = await apiClient.post<LoginResponse>('/login', {
         email: id,
         password: pw,
       });
 
-      // { data: { email, name, token } } 구조 언랩
-      const { email, name, token } = response.data.data;
-      // AuthContext 에 저장
+      const { email, name, token } = response.data.data!;
       login({ email, name, authToken: token });
       onLoginSuccess();
-    } catch (e: any) {
-      // 서버 메시지 우선, 없으면 예외 메시지
-      const msg =
-        e.response?.data?.data?.message ??
-        e.response?.data?.message ??
-        e.message;
+    } catch (e: unknown) {
+      let msg = '로그인 중 오류가 발생했습니다.';
+
+      if (e instanceof AxiosError) {
+        msg =
+          e.response?.data?.data?.message ??
+          e.response?.data?.message ??
+          e.message;
+      }
+
       setPwError(msg);
     }
   };
