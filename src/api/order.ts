@@ -2,6 +2,7 @@ import { apiClient } from './apiClient';
 import { toast } from 'react-toastify';
 import { NavigateFunction } from 'react-router-dom';
 import { AxiosError } from 'axios';
+import { API_PATH } from '@/constants/api';
 
 type OrderParams = {
   productId: number;
@@ -23,7 +24,7 @@ export const fetchOrderSubmit = async (
   navigate: NavigateFunction
 ) => {
   try {
-    await apiClient.post('/order', order, {
+    await apiClient.post(API_PATH.ORDER, order, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

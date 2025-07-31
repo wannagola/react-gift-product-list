@@ -1,26 +1,28 @@
 import { useEffect, useState } from 'react';
 import { fetchProductSummary } from '@/api/product';
-import type { Product } from '@/api/ranking';
 import { useNavigate } from 'react-router-dom';
+import { GiftItem } from '@/constants/GiftItem';
 
 export const useProductSummary = (productId: number) => {
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<GiftItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
-  const navigate = useNavigate(); // ✅ navigate 훅 사용
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setLoading(true);
-
-    fetchProductSummary(String(productId), navigate)
-      .then((res) => {
-        setProduct(res);
-        setLoading(false);
-      })
-      .catch((err) => {
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchProductSummary(productId, navigate);
+        setProduct(data);
+      } catch (err) {
         setError(err);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetch();
   }, [productId, navigate]);
 
   return { product, loading, error };

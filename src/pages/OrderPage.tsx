@@ -53,6 +53,11 @@ const OrderPage = () => {
       return;
     }
 
+    if (form.recipients.length === 0) {
+      toast.error('받는 사람을 한 명 이상 추가해주세요.');
+      return;
+    }
+
     try {
       await fetchOrderSubmit(
         {
