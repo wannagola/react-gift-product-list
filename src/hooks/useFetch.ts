@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '@/api/apiClient';
 
 interface ApiResponse<T> {
   data: T;
+  status: string;
+  message?: string;
 }
 
-export function useFetch<T = unknown>(
+export function useFetch<T>(
   endpoint: string,
   params?: Record<string, unknown>
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<unknown>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     let canceled = false;
@@ -19,12 +21,12 @@ export function useFetch<T = unknown>(
 
     apiClient
       .get<ApiResponse<T>>(endpoint, { params })
-      .then((res) => {
+      .then((res: { data: ApiResponse<T> }) => {
         if (!canceled) {
           setData(res.data.data);
         }
       })
-      .catch((err: unknown) => {
+      .catch((err: Error) => {
         if (!canceled) {
           setError(err);
         }
@@ -38,7 +40,7 @@ export function useFetch<T = unknown>(
     return () => {
       canceled = true;
     };
-  }, [endpoint, JSON.stringify(params)]);
+  }, [endpoint, params]);
 
   return { data, loading, error };
 }

@@ -63,8 +63,8 @@ export default LoginFormSection;
 
 const wrapper = css`
   width: 100%;
-  padding: 0 16px;
-  margin-top: 56px; /* 헤더 높이 + 여백 */
+  padding: 0 ${theme.spacing.spacing4};
+  margin-top: ${theme.spacing.spacing14}; // 56px
 `;
 
 const form = css`
@@ -73,18 +73,21 @@ const form = css`
 `;
 
 const inputGroup = css`
-  margin-bottom: 32px;
+  margin-bottom: ${theme.spacing.spacing8}; // 32px
 `;
 
 const input = css`
   width: 100%;
   border: none;
   border-bottom: 1px solid ${theme.borderColors.default};
-  padding: 8px 0;
-  font-size: 16px;
+  padding: ${theme.spacing.spacing2} 0;
+  font: ${theme.typography.body1Regular};
+  color: ${theme.textColors.default};
+
   ::placeholder {
-    color: ${theme.borderColors.default};
+    color: ${theme.textColors.placeholder};
   }
+
   &:focus {
     outline: none;
     border-bottom-color: ${theme.sementicColors.kakaoYellow};
@@ -92,21 +95,20 @@ const input = css`
 `;
 
 const errorText = css`
-  margin-top: 4px;
+  margin-top: ${theme.spacing.spacing1}; // 4px
   color: ${theme.stateColors.critical};
-  font-size: 12px;
+  font: ${theme.typography.label2Regular}; // 12px
 `;
 
 const button = (disabled: boolean) => css`
   width: 100%;
-  height: 48px;
+  height: ${theme.spacing.spacing12}; // 48px
   background-color: ${disabled
     ? theme.backgroundColors.disabled
     : theme.sementicColors.kakaoYellow};
-  color: #000;
+  color: ${theme.textColors.default};
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: bold;
+  border-radius: ${theme.spacing.spacing1}; // 4px
+  font: ${theme.typography.body1Bold};
   cursor: ${disabled ? 'default' : 'pointer'};
 `;

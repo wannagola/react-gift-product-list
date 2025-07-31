@@ -11,7 +11,7 @@ import LoginPage from '@/pages/loginpage';
 import MyPage from '@/pages/MyPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import OrderPage from '@/pages/OrderPage';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthProvider';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
 
 function App() {

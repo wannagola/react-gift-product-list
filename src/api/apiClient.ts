@@ -7,21 +7,16 @@ export const apiClient = axios.create({
 });
 
 const shownToasts = new Set<string>();
-
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
     if (status && status >= 400 && status < 500) {
-      const msg =
-        error.response.data?.data?.message ??
-        error.response.data?.message ??
-        error.message;
+      const msg = error.response?.data?.message ?? error.message;
 
       if (!shownToasts.has(msg)) {
         toast.error(msg);
         shownToasts.add(msg);
-
         setTimeout(() => shownToasts.delete(msg), 5000);
       }
     }

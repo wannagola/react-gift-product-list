@@ -71,10 +71,8 @@ export const useLoginForm = ({ onLoginSuccess }: Props) => {
       let msg = '로그인 중 오류가 발생했습니다.';
 
       if (e instanceof AxiosError) {
-        msg =
-          e.response?.data?.data?.message ??
-          e.response?.data?.message ??
-          e.message;
+        const resData = e.response?.data;
+        msg = resData?.data?.message ?? resData?.message ?? e.message;
       }
 
       setPwError(msg);
