@@ -18,7 +18,8 @@ const LoginFormSection = ({ onLoginSuccess }: Props) => {
     handleLogin,
   } = useLoginForm({ onLoginSuccess });
 
-  const isDisabled = !id || !pw || !!idError || !!pwError;
+  const isValidPassword = pw.length >= 8;
+  const isDisabled = !id || !isValidPassword || !!idError || !!pwError;
 
   return (
     <div css={wrapper}>
