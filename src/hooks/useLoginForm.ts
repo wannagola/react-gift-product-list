@@ -59,7 +59,7 @@ export const useLoginForm = ({ onLoginSuccess }: Props) => {
     if (!validateId() || !validatePw()) return;
 
     try {
-      const response = await apiClient.post<LoginResponse>('/login', {
+      const response = await apiClient.post<LoginResponse>('/api/login', {
         email: id,
         password: pw,
       });

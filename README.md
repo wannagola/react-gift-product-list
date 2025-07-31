@@ -7,3 +7,5 @@
 - useFetch hook : dependency array 수정
 - 필터 새로고침 시 해제 -> 수정 완료
 - 랭킹 기능 : 1~3등 뱃지 색깔 변경
+- 비밀번호 유효성 검사
+- summary API 적용

@@ -7,7 +7,7 @@ import OrderForm, { OrderFormData } from '@/components/order/OrderForm';
 import RecipientsModal from '@/components/order/RecipientsModal';
 import Spinner from '@/components/common/Spinner';
 import { useCards } from '@/hooks/useCards';
-import { useProductDetail } from '@/hooks/useProductDetail';
+import { useProductSummary } from '@/hooks/useProductSummary';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchOrderSubmit } from '@/api/order';
 import type { Recipient } from '@/types/order';
@@ -28,7 +28,7 @@ const OrderPage = () => {
     product,
     loading: productLoading,
     error: productError,
-  } = useProductDetail(productId);
+  } = useProductSummary(productId);
 
   const { cards, loading: cardsLoading, error: cardsError } = useCards();
   const { user } = useAuth();
@@ -130,7 +130,6 @@ const OrderPage = () => {
 
 export default OrderPage;
 
-// 스타일 코드 동일
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing.spacing6}
     ${({ theme }) => theme.spacing.spacing4} 120px;
