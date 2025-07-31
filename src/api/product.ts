@@ -26,9 +26,6 @@ interface ApiResponse<T> {
 
 interface ErrorResponse {
   message?: string;
-  data?: {
-    message?: string;
-  };
 }
 
 export const fetchProductBasic = async (
@@ -52,9 +49,7 @@ export const fetchProductSummary = async (
   } catch (err: unknown) {
     const error = err as AxiosError<ErrorResponse>;
     const msg =
-      error.response?.data?.data?.message ||
-      error.response?.data?.message ||
-      '상품 정보를 불러오지 못했습니다.';
+      error.response?.data?.message || '상품 정보를 불러오지 못했습니다.';
     toast.error(msg);
     navigate('/');
     return null;
