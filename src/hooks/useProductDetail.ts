@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchProductBasic, ProductBasic } from '@/api/product';
 import type { GiftItem } from '@/constants/GiftItem';
 
-export const useProductDetail = (productId: number) => {
+export const useProductSummary = (productId: number) => {
   const [product, setProduct] = useState<GiftItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -15,10 +15,12 @@ export const useProductDetail = (productId: number) => {
           name: p.name,
           imageURL: p.imageURL,
           price: p.price,
-          brandInfo: p.brandInfo,
+          brandName: p.brandName,
         });
       })
-      .catch(setError)
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+      })
       .finally(() => setLoading(false));
   }, [productId]);
 

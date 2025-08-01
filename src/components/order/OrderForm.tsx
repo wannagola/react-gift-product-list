@@ -40,7 +40,7 @@ const OrderForm = ({
   }, [defaultMessage, setValue]);
 
   const total = recipients.reduce(
-    (sum, r) => sum + r.quantity * product.price.sellingPrice,
+    (sum, r) => sum + r.quantity * product.price,
     0
   );
 
@@ -99,9 +99,9 @@ const OrderForm = ({
       <ProductCard>
         <Thumb src={product.imageURL} alt="product" />
         <Info>
-          <Brand>{product.brandInfo.name}</Brand>
+          <Brand>{product.brandName}</Brand>
           <ProdName>{product.name}</ProdName>
-          <Price>상품가 {product.price.sellingPrice.toLocaleString()}원</Price>
+          <Price>상품가 {product.price.toLocaleString()}원</Price>
         </Info>
       </ProductCard>
 
