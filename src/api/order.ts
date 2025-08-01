@@ -1,15 +1,16 @@
 import { apiClient } from './apiClient';
-import { toast } from 'react-toastify';
 import { NavigateFunction } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { API_PATH } from '@/constants/api';
 
 type OrderParams = {
   productId: number;
-  sender: string;
-  recipients: {
+  message: string;
+  messageCardId: string;
+  ordererName: string;
+  receivers: {
     name: string;
-    phone: string;
+    phoneNumber: string;
     quantity: number;
   }[];
 };
@@ -18,28 +19,36 @@ type OrderErrorResponse = {
   message?: string;
 };
 
+type OrderSubmitResult = {
+  success: boolean;
+  message?: string;
+};
+
 export const fetchOrderSubmit = async (
   order: OrderParams,
   token: string,
   navigate: NavigateFunction
-) => {
+): Promise<OrderSubmitResult> => {
   try {
     await apiClient.post(API_PATH.ORDER, order, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: token,
       },
     });
-    toast.success('주문이 완료되었습니다!');
+    return { success: true };
   } catch (err: unknown) {
     const error = err as AxiosError<OrderErrorResponse>;
 
     if (error.response?.status === 401) {
-      toast.error('로그인이 필요합니다.');
       navigate('/login');
+      return { success: false, message: '로그인이 필요합니다.' };
     } else if (error.response) {
-      toast.error(error.response.data?.message ?? '주문에 실패했습니다.');
+      return {
+        success: false,
+        message: error.response.data?.message ?? '주문에 실패했습니다.',
+      };
     } else {
-      toast.error('알 수 없는 오류가 발생했습니다.');
+      return { success: false, message: '알 수 없는 오류가 발생했습니다.' };
     }
   }
 };

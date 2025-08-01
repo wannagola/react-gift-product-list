@@ -40,10 +40,9 @@ const OrderForm = ({
   }, [defaultMessage, setValue]);
 
   const total = recipients.reduce(
-    (sum, r) => sum + r.quantity * product.price,
+    (sum, r) => sum + r.quantity * product.price.sellingPrice,
     0
   );
-
   return (
     <form onSubmit={handleSubmit((data) => onSubmit({ ...data, recipients }))}>
       <Field>
@@ -87,7 +86,7 @@ const OrderForm = ({
               {recipients.map((r, i) => (
                 <tr key={i}>
                   <td>{r.name}</td>
-                  <td>{r.phone}</td>
+                  <td>{r.phoneNumber}</td>
                   <td>{r.quantity}</td>
                 </tr>
               ))}
@@ -101,7 +100,7 @@ const OrderForm = ({
         <Info>
           <Brand>{product.brandName}</Brand>
           <ProdName>{product.name}</ProdName>
-          <Price>상품가 {product.price.toLocaleString()}원</Price>
+          <Price>상품가 {product.price.sellingPrice.toLocaleString()}원</Price>
         </Info>
       </ProductCard>
 

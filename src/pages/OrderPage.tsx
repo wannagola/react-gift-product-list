@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { toast } from 'react-toastify';
-import { AxiosError } from 'axios';
 import OrderForm, { OrderFormData } from '@/components/order/OrderForm';
 import RecipientsModal from '@/components/order/RecipientsModal';
 import Spinner from '@/components/common/Spinner';
@@ -11,13 +10,6 @@ import { useProductSummary } from '@/hooks/useProductSummary';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchOrderSubmit } from '@/api/order';
 import type { Recipient } from '@/types/order';
-
-interface ErrorResponse {
-  message?: string;
-  data?: {
-    message?: string;
-  };
-}
 
 const OrderPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,33 +50,33 @@ const OrderPage = () => {
       return;
     }
 
-    try {
-      await fetchOrderSubmit(
-        {
-          productId,
-          sender: form.sender,
-          recipients: form.recipients,
-        },
-        user.authToken,
-        navigate
-      );
+    const mappedRecipients = form.recipients.map((r) => ({
+      name: r.name,
+      phoneNumber: r.phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3'),
+      quantity: r.quantity,
+    }));
+
+    const orderPayload = {
+      productId,
+      message: form.message,
+      messageCardId: String(cards[selectedCardIndex].id),
+      ordererName: form.sender,
+      receivers: mappedRecipients,
+    };
+
+    
+
+    const result = await fetchOrderSubmit(
+      orderPayload,
+      user.authToken,
+      navigate
+    );
+
+    if (result.success) {
       toast.success('주문이 완료되었습니다!');
       navigate('/');
-    } catch (err: unknown) {
-      const error = err as AxiosError<ErrorResponse>;
-      const status = error.response?.status;
-
-      if (status === 401) {
-        toast.error('로그인이 만료되었습니다. 다시 로그인해주세요.');
-        navigate('/login');
-      } else {
-        const msg =
-          error.response?.data?.data?.message ||
-          error.response?.data?.message ||
-          error.message ||
-          '주문 중 오류가 발생했습니다.';
-        toast.error(msg);
-      }
+    } else {
+      toast.error(result.message);
     }
   };
 

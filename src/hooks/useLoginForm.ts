@@ -13,7 +13,7 @@ type LoginResponse = {
     message?: string;
     email: string;
     name: string;
-    token: string;
+    authToken: string;
   };
 };
 
@@ -64,8 +64,8 @@ export const useLoginForm = ({ onLoginSuccess }: Props) => {
         password: pw,
       });
 
-      const { email, name, token } = response.data.data!;
-      login({ email, name, authToken: token });
+      const { email, name, authToken } = response.data.data!;
+      login({ email, name, authToken });
       onLoginSuccess();
     } catch (e: unknown) {
       let msg = '로그인 중 오류가 발생했습니다.';

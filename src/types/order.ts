@@ -1,5 +1,5 @@
 export type Recipient = {
   name: string;
-  phone: string;
+  phoneNumber: string;
   quantity: number;
 };

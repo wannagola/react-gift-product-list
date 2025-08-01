@@ -22,8 +22,8 @@ const RecipientForm = ({ index, recipient, onChange, onRemove }: Props) => {
       />
       <input
         placeholder="전화번호 (010으로 시작)"
-        value={recipient.phone}
-        onChange={(e) => handleChange('phone', e.target.value)}
+        value={recipient.phoneNumber}
+        onChange={(e) => handleChange('phoneNumber', e.target.value)}
       />
       <input
         type="number"

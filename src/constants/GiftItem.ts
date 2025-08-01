@@ -1,7 +1,11 @@
 export type GiftItem = {
   id: number;
   name: string;
-  price: number;
+  price: {
+    basicPrice: number;
+    sellingPrice: number;
+    discountRate: number;
+  };
   imageURL: string;
   brandName: string;
 };

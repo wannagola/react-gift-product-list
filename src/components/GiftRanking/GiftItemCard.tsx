@@ -11,7 +11,7 @@ const GiftItemCard = ({ item }: { item: GiftItem }) => {
       <Image src={item.imageURL} alt={item.name} />
       <Name>{item.name}</Name>
       <Brand>{item.brandName}</Brand>
-      <Price>{item.price.toLocaleString()}원</Price>
+      <Price>{item.price.sellingPrice.toLocaleString()}원</Price>
     </Card>
   );
 };
