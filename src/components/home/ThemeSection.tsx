@@ -1,9 +1,11 @@
 import React from 'react';
 import styled from '@emotion/styled';
+import { useNavigate } from 'react-router-dom';
 import { useThemes } from '@/hooks/useThemes';
 import Spinner from '@/components/common/Spinner';
 
 const ThemeSection: React.FC = () => {
+  const navigate = useNavigate();
   const { themes, loading, error } = useThemes();
 
   if (loading) return <Spinner />;
@@ -14,7 +16,7 @@ const ThemeSection: React.FC = () => {
       <Title>선물 테마</Title>
       <Grid>
         {themes.map((t) => (
-          <Card key={t.themeId}>
+          <Card key={t.themeId} onClick={() => navigate(`/themes/${t.themeId}`)}>
             <Thumb src={t.image} alt={t.name} />
             <Label>{t.name}</Label>
           </Card>
