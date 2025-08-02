@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiClient } from '@/api/apiClient';
 import { GiftItem } from '@/constants/GiftItem';
 
@@ -18,10 +18,10 @@ export function useThemeProducts(themeId: number) {
   const [products, setProducts] = useState<GiftItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
-  const [cursor, setCursor] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const cursorRef = useRef<number>(0);
 
-  const fetchProducts = useCallback(async () => {
+  const fetchMore = useCallback(async () => {
     if (!themeId || !hasMore || loading) return;
 
     setLoading(true);
@@ -31,7 +31,7 @@ export function useThemeProducts(themeId: number) {
       const res = await apiClient.get<ApiResponse<ThemeProductsResponse>>(
         `/api/themes/${themeId}/products`,
         {
-          params: { cursor, limit: PRODUCTS_LIMIT },
+          params: { cursor: cursorRef.current, limit: PRODUCTS_LIMIT },
         }
       );
 
@@ -42,7 +42,7 @@ export function useThemeProducts(themeId: number) {
           );
           return [...prevProducts, ...newProducts];
         });
-        setCursor(res.data.data.cursor);
+        cursorRef.current = res.data.data.cursor;
         setHasMore(res.data.data.hasMoreList);
       }
     } catch (err) {
@@ -50,18 +50,15 @@ export function useThemeProducts(themeId: number) {
     } finally {
       setLoading(false);
     }
-  }, [themeId, hasMore, loading, cursor]);
+  }, [themeId, hasMore, loading]);
 
   useEffect(() => {
     setProducts([]);
-    setCursor(0);
+    cursorRef.current = 0;
     setHasMore(true);
     setError(null);
+    fetchMore();
   }, [themeId]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  return { products, loading, error, fetchMore: fetchProducts, hasMore };
+  return { products, loading, error, fetchMore, hasMore };
 }
