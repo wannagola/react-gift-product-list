@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { GiftItem } from '@/constants/GiftItem';
 import { Recipient } from '@/types/order';
@@ -15,6 +16,7 @@ type Props = {
   recipients: Recipient[];
   onEditRecipients: () => void;
   onSubmit: (data: OrderFormData) => void;
+  defaultSender: string;
 };
 
 const OrderForm = ({
@@ -23,20 +25,24 @@ const OrderForm = ({
   recipients,
   onEditRecipients,
   onSubmit,
+  defaultSender,
 }: Props) => {
-  const { register, handleSubmit } = useForm<OrderFormData>({
+  const { register, handleSubmit, setValue } = useForm<OrderFormData>({
     defaultValues: {
-      sender: '',
+      sender: defaultSender,
       message: defaultMessage,
       recipients,
     },
   });
 
+  useEffect(() => {
+    setValue('message', defaultMessage);
+  }, [defaultMessage, setValue]);
+
   const total = recipients.reduce(
     (sum, r) => sum + r.quantity * product.price.sellingPrice,
     0
   );
-
   return (
     <form onSubmit={handleSubmit((data) => onSubmit({ ...data, recipients }))}>
       <Field>
@@ -80,7 +86,7 @@ const OrderForm = ({
               {recipients.map((r, i) => (
                 <tr key={i}>
                   <td>{r.name}</td>
-                  <td>{r.phone}</td>
+                  <td>{r.phoneNumber}</td>
                   <td>{r.quantity}</td>
                 </tr>
               ))}
@@ -92,7 +98,7 @@ const OrderForm = ({
       <ProductCard>
         <Thumb src={product.imageURL} alt="product" />
         <Info>
-          <Brand>{product.brandInfo.name}</Brand>
+          <Brand>{product.brandName}</Brand>
           <ProdName>{product.name}</ProdName>
           <Price>상품가 {product.price.sellingPrice.toLocaleString()}원</Price>
         </Info>

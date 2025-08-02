@@ -22,7 +22,7 @@ const RecipientsList = ({ recipients, onEdit, unitPrice }: Props) => {
       <List>
         {recipients.map((r, i) => (
           <li key={i}>
-            {r.name} ({r.phone}) - {r.quantity}개
+            {r.name} ({r.phoneNumber}) - {r.quantity}개
           </li>
         ))}
       </List>

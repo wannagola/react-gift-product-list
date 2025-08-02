@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
-import { fetchCards, Card } from '@/api/cards';
+import { messageCards } from '@/mock/cards';
 
 export const useCards = () => {
-  const [cards, setCards] = useState<Card[]>([]);
+  const [cards, setCards] = useState(messageCards);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error] = useState<Error | null>(null);
 
   useEffect(() => {
-    fetchCards()
-      .then(setCards)
-      .catch(setError)
-      .finally(() => setLoading(false));
+    const timeout = setTimeout(() => {
+      setCards(messageCards);
+      setLoading(false);
+    }, 300);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   return { cards, loading, error };

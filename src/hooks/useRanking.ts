@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchRanking, Product, FilterValue } from '@/api/ranking';
-import type { TabValue } from '@/api/ranking';
+import { fetchRanking, Product, FilterValue, TabValue } from '@/api/ranking';
 
 export const useRanking = (filter: FilterValue, type: TabValue) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -8,19 +7,24 @@ export const useRanking = (filter: FilterValue, type: TabValue) => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setError(null);
 
     fetchRanking(filter, type)
-      .then((res) => {
-        setProducts(res);
+      .then((list) => {
+        if (!cancelled) setProducts(list);
       })
       .catch((err) => {
-        setError(err);
+        if (!cancelled) setError(err);
       })
       .finally(() => {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [filter, type]);
 
   return { products, loading, error };

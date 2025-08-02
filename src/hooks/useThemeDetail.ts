@@ -1,32 +1,41 @@
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/api/apiClient';
 
-interface ApiResponse<T> {
-  data: T;
-  status: string;
-  message?: string;
+interface ThemeDetail {
+  themeId: number;
+  name: string;
+  title: string;
+  description: string;
+  backgroundColor: string;
 }
 
-export function useFetch<T>(
-  endpoint: string,
-  params?: Record<string, unknown>
-) {
-  const [data, setData] = useState<T | null>(null);
+interface ApiResponse<T> {
+  data: T;
+}
+
+export function useThemeDetail(themeId: number) {
+  const [theme, setTheme] = useState<ThemeDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    if (!themeId) {
+      setLoading(false);
+      setError(new Error('Theme ID is missing.'));
+      return;
+    }
+
     let canceled = false;
     setLoading(true);
 
     apiClient
-      .get<ApiResponse<T>>(endpoint, { params })
-      .then((res: { data: ApiResponse<T> }) => {
+      .get<ApiResponse<ThemeDetail>>(`/api/themes/${themeId}/info`)
+      .then((res) => {
         if (!canceled) {
-          setData(res.data.data);
+          setTheme(res.data.data);
         }
       })
-      .catch((err: Error) => {
+      .catch((err) => {
         if (!canceled) {
           setError(err);
         }
@@ -40,7 +49,7 @@ export function useFetch<T>(
     return () => {
       canceled = true;
     };
-  }, [endpoint, params]);
+  }, [themeId]);
 
-  return { data, loading, error };
+  return { theme, loading, error };
 }

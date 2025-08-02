@@ -1,14 +1,7 @@
 import React from 'react';
 import styled from '@emotion/styled';
-
-export const filters = [
-  { label: '전체', value: 'ALL', icon: '👥' },
-  { label: '여성이', value: 'FEMALE', icon: '👩' },
-  { label: '남성이', value: 'MALE', icon: '👨' },
-  { label: '청소년이', value: 'TEEN', icon: '🧒' },
-] as const;
-
-export type FilterValue = (typeof filters)[number]['value'];
+import { filters } from '@/constants/giftRankingFilter.const';
+import type { FilterValue } from '@/types/giftRankingFilter.type';
 
 interface Props {
   selected: FilterValue;

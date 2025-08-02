@@ -1,42 +1,93 @@
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { apiClient } from '@/api/apiClient';
+import { AxiosError } from 'axios';
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+type Props = {
+  onLoginSuccess: () => void;
+};
 
-export const useLoginForm = () => {
+type LoginResponse = {
+  message?: string;
+  data?: {
+    message?: string;
+    email: string;
+    name: string;
+    authToken: string;
+  };
+};
+
+export const useLoginForm = ({ onLoginSuccess }: Props) => {
+  const { login } = useAuth();
   const [id, setId] = useState('');
   const [pw, setPw] = useState('');
-  const [idTouched, setIdTouched] = useState(false);
-  const [pwTouched, setPwTouched] = useState(false);
+  const [idError, setIdError] = useState('');
+  const [pwError, setPwError] = useState('');
 
-  const isIdValid = id.length > 0 && emailRegex.test(id);
-  const isPwValid = pw.length >= 8;
-  const isFormValid = isIdValid && isPwValid;
+  const validateId = (): boolean => {
+    if (!id.trim()) {
+      setIdError('ID를 입력해주세요.');
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(id)) {
+      setIdError('ID는 이메일 형식이어야 합니다.');
+      return false;
+    }
+    if (!id.endsWith('@kakao.com')) {
+      setIdError('ID는 @kakao.com 도메인이어야 합니다.');
+      return false;
+    }
+    setIdError('');
+    return true;
+  };
 
-  const idError =
-    idTouched && id.length === 0
-      ? 'ID를 입력해주세요.'
-      : idTouched && !emailRegex.test(id)
-        ? 'ID는 이메일 형식으로 입력해주세요.'
-        : '';
+  const validatePw = (): boolean => {
+    if (!pw.trim()) {
+      setPwError('PW를 입력해주세요.');
+      return false;
+    }
+    if (pw.length < 8) {
+      setPwError('PW는 최소 8글자 이상이어야 합니다.');
+      return false;
+    }
+    setPwError('');
+    return true;
+  };
 
-  const pwError =
-    pwTouched && pw.length === 0
-      ? 'PW를 입력해주세요.'
-      : pwTouched && pw.length < 8
-        ? 'PW는 최소 8글자 이상이어야 합니다.'
-        : '';
+  const handleLogin = async () => {
+    if (!validateId() || !validatePw()) return;
+
+    try {
+      const response = await apiClient.post<LoginResponse>('/api/login', {
+        email: id,
+        password: pw,
+      });
+
+      const { email, name, authToken } = response.data.data!;
+      login({ email, name, authToken });
+      onLoginSuccess();
+    } catch (e: unknown) {
+      let msg = '로그인 중 오류가 발생했습니다.';
+
+      if (e instanceof AxiosError) {
+        const resData = e.response?.data;
+        msg = resData?.data?.message ?? resData?.message ?? e.message;
+      }
+
+      setPwError(msg);
+    }
+  };
 
   return {
     id,
     pw,
     setId,
     setPw,
-    idTouched,
-    pwTouched,
-    setIdTouched,
-    setPwTouched,
     idError,
     pwError,
-    isFormValid,
+    validateId,
+    validatePw,
+    handleLogin,
   };
 };

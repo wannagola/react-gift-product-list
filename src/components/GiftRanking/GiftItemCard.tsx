@@ -10,7 +10,7 @@ const GiftItemCard = ({ item }: { item: GiftItem }) => {
     <Card to={orderPath}>
       <Image src={item.imageURL} alt={item.name} />
       <Name>{item.name}</Name>
-      <Brand>{item.brandInfo.name}</Brand>
+      <Brand>{item.brandName}</Brand>
       <Price>{item.price.sellingPrice.toLocaleString()}원</Price>
     </Card>
   );

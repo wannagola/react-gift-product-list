@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-
+import { toast } from 'react-toastify';
 import OrderForm, { OrderFormData } from '@/components/order/OrderForm';
 import RecipientsModal from '@/components/order/RecipientsModal';
 import Spinner from '@/components/common/Spinner';
-
 import { useCards } from '@/hooks/useCards';
-import { useProductDetail } from '@/hooks/useProductDetail';
+import { useProductSummary } from '@/hooks/useProductSummary';
+import { useAuth } from '@/contexts/AuthContext';
+import { fetchOrderSubmit } from '@/api/order';
 import type { Recipient } from '@/types/order';
 
 const OrderPage = () => {
@@ -19,9 +20,10 @@ const OrderPage = () => {
     product,
     loading: productLoading,
     error: productError,
-  } = useProductDetail(productId);
+  } = useProductSummary(productId);
 
   const { cards, loading: cardsLoading, error: cardsError } = useCards();
+  const { user } = useAuth();
 
   const [selectedCardIndex, setSelectedCardIndex] = useState(0);
   const [recipients, setRecipients] = useState<Recipient[]>([]);
@@ -36,19 +38,46 @@ const OrderPage = () => {
       <ErrorText>메시지 카드를 불러오는 중 오류가 발생했습니다.</ErrorText>
     );
 
-  const handleOrderSubmit = (form: OrderFormData) => {
-    alert(
-      `주문 완료!\n\n` +
-        `상품: ${product.name}\n` +
-        `발신자: ${form.sender}\n` +
-        `메시지: ${form.message}\n\n` +
-        form.recipients
-          .map(
-            (r, i) => `${i + 1}. ${r.name} / ${r.phone} / 수량 ${r.quantity}개`
-          )
-          .join('\n')
+  const handleOrderSubmit = async (form: OrderFormData) => {
+    if (!user) {
+      toast.error('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+
+    if (form.recipients.length === 0) {
+      toast.error('받는 사람을 한 명 이상 추가해주세요.');
+      return;
+    }
+
+    const mappedRecipients = form.recipients.map((r) => ({
+      name: r.name,
+      phoneNumber: r.phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3'),
+      quantity: r.quantity,
+    }));
+
+    const orderPayload = {
+      productId,
+      message: form.message,
+      messageCardId: String(cards[selectedCardIndex].id),
+      ordererName: form.sender,
+      receivers: mappedRecipients,
+    };
+
+    
+
+    const result = await fetchOrderSubmit(
+      orderPayload,
+      user.authToken,
+      navigate
     );
-    navigate('/');
+
+    if (result.success) {
+      toast.success('주문이 완료되었습니다!');
+      navigate('/');
+    } else {
+      toast.error(result.message);
+    }
   };
 
   return (
@@ -60,7 +89,7 @@ const OrderPage = () => {
             <CardThumb
               key={card.id}
               src={card.imageUrl}
-              alt={card.label}
+              alt={card.defaultTextMessage}
               isSelected={selectedCardIndex === idx}
               onClick={() => setSelectedCardIndex(idx)}
             />
@@ -69,17 +98,18 @@ const OrderPage = () => {
         <SelectedCardBox>
           <SelectedCardImg
             src={cards[selectedCardIndex].imageUrl}
-            alt={cards[selectedCardIndex].label}
+            alt={cards[selectedCardIndex].defaultTextMessage}
           />
         </SelectedCardBox>
       </Section>
 
       <OrderForm
         product={product}
-        defaultMessage={cards[selectedCardIndex].label}
+        defaultMessage={cards[selectedCardIndex].defaultTextMessage}
         recipients={recipients}
         onEditRecipients={() => setShowModal(true)}
         onSubmit={handleOrderSubmit}
+        defaultSender={user?.name ?? ''}
       />
 
       <RecipientsModal
@@ -104,20 +134,24 @@ const Container = styled.div`
   margin: 0 auto;
   background: ${({ theme }) => theme.backgroundColors.default};
 `;
+
 const Section = styled.section`
   margin-bottom: ${({ theme }) => theme.spacing.spacing6};
 `;
+
 const Title = styled.h2`
   font: ${({ theme }) => theme.typography.label2Bold};
   color: ${({ theme }) => theme.textColors.default};
   margin-bottom: ${({ theme }) => theme.spacing.spacing2};
 `;
+
 const CardThumbRow = styled.div`
   display: flex;
   overflow-x: auto;
   gap: ${({ theme }) => theme.spacing.spacing2};
   padding-bottom: ${({ theme }) => theme.spacing.spacing2};
 `;
+
 const CardThumb = styled.img<{ isSelected: boolean }>`
   width: 60px;
   height: 60px;
@@ -129,15 +163,18 @@ const CardThumb = styled.img<{ isSelected: boolean }>`
   cursor: pointer;
   flex: 0 0 auto;
 `;
+
 const SelectedCardBox = styled.div`
   display: flex;
   justify-content: center;
   margin: ${({ theme }) => theme.spacing.spacing5} 0;
 `;
+
 const SelectedCardImg = styled.img`
   width: 240px;
   border-radius: ${({ theme }) => theme.spacing.spacing4};
 `;
+
 const ErrorText = styled.p`
   color: red;
   text-align: center;

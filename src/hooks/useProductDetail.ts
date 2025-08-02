@@ -1,26 +1,24 @@
 import { useEffect, useState } from 'react';
-import { fetchProductBasic, ProductBasic } from '@/api/product';
+import { fetchProductSummary } from '@/api/product';
 import type { GiftItem } from '@/constants/GiftItem';
+import { useNavigate } from 'react-router-dom';
 
 export const useProductDetail = (productId: number) => {
   const [product, setProduct] = useState<GiftItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProductBasic(productId)
-      .then((p: ProductBasic) => {
-        setProduct({
-          id: p.id,
-          name: p.name,
-          imageURL: p.imageURL,
-          price: p.price,
-          brandInfo: p.brandInfo,
-        });
+    fetchProductSummary(productId, navigate)
+      .then((p: GiftItem) => {
+        setProduct(p);
       })
-      .catch(setError)
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+      })
       .finally(() => setLoading(false));
-  }, [productId]);
+  }, [productId, navigate]);
 
   return { product, loading, error };
 };

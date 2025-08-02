@@ -30,7 +30,7 @@ const RecipientsModal = ({
       recipients:
         initialRecipients.length > 0
           ? initialRecipients
-          : [{ name: '', phone: '', quantity: 1 }],
+          : [{ name: '', phoneNumber: '', quantity: 1 }],
     },
   });
 
@@ -40,12 +40,19 @@ const RecipientsModal = ({
   });
 
   const onSubmit = (data: FormValues) => {
-    const phones = data.recipients.map((r) => r.phone.trim());
+    const phones = data.recipients.map((r) => r.phoneNumber.trim());
     if (new Set(phones).size !== phones.length) {
       alert('전화번호가 중복되지 않도록 입력해주세요.');
       return;
     }
-    onSave(data.recipients);
+
+    // quantity 값을 숫자로 명시적으로 변환하고, 유효하지 않으면 1로 설정
+    const cleanedRecipients = data.recipients.map((r) => ({
+      ...r,
+      quantity: typeof r.quantity === 'number' && !isNaN(r.quantity) ? r.quantity : 1,
+    }));
+
+    onSave(cleanedRecipients); // 수정된 recipients 배열 전달
     onClose();
   };
 
@@ -65,7 +72,7 @@ const RecipientsModal = ({
             const nameErr = errors.recipients?.[idx]?.name?.message as
               | string
               | undefined;
-            const phoneErr = errors.recipients?.[idx]?.phone?.message as
+            const phoneErr = errors.recipients?.[idx]?.phoneNumber?.message as
               | string
               | undefined;
             const qtyErr = errors.recipients?.[idx]?.quantity?.message as
@@ -89,7 +96,7 @@ const RecipientsModal = ({
                     type="tel"
                     inputMode="numeric"
                     maxLength={11}
-                    {...register(`recipients.${idx}.phone`, {
+                    {...register(`recipients.${idx}.phoneNumber`, {
                       required: '전화번호를 입력하세요.',
                       pattern: {
                         value: PHONE_REGEX,
@@ -125,7 +132,7 @@ const RecipientsModal = ({
           {fields.length < 10 && (
             <AddButton
               type="button"
-              onClick={() => append({ name: '', phone: '', quantity: 1 })}
+              onClick={() => append({ name: '', phoneNumber: '', quantity: 1 })}
             >
               + 추가하기
             </AddButton>
